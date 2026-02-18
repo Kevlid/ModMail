@@ -7,7 +7,7 @@
     "scripts": {
         "build": "tsc -p tsconfig.json",
         "start": "node dist/index.js",
-        "dev": "tsx watch src/index.ts"
+        "dev": "tsx watch src/index.ts --debug"
     },
     "engines": {
         "node": ">=20.0.0"

@@ -1,33 +1,20 @@
-import { Client } from "eris";
 import { config } from "./config";
 import { loggers } from "./logger";
-
+import { client } from "./client";
 
 // Services
 import mongoose from "mongoose";
-import { AiService } from "./services/ai";
-import { TicketService } from "./services/ticket";
+import { aiService } from "./services/ai";
+import { ticketService } from "./services/ticket";
 
 const bootstrap = async (): Promise<void> => {
-    const client = new Client(config.discordToken, {
-        intents: [
-            "guilds",
-            "guildMessages",
-            "directMessages",
-            "directMessageReactions",
-            "guildMessageReactions",
-            "guildMembers",
-            "messageContent"
-        ]
-    });
-
     // Initialize services
     await mongoose.connect(config.mongoUri, {
         serverSelectionTimeoutMS: 10_000,
         maxPoolSize: 20
     });
-    AiService.initialize(config.openAiApiKey);
-    TicketService.initialize(client);
+    aiService.initialize(config.openAiApiKey);
+    ticketService.initialize(client);
 
     client.once("ready", async () => {
         loggers.client.info(`Modmail bot online as ${client.user.username} (${client.user.id})`);

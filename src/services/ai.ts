@@ -37,4 +37,4 @@ class Service {
 	}
 }
 
-export const AiService = new Service();
+export const aiService = new Service();

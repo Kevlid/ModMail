@@ -14,7 +14,8 @@ const LevelTag = {
     [LogLevel.Error]: chalk.red("[ERROR]")
 }
 
-const globalLogLevel: LogLevel = LogLevel.Info;
+const isDebugMode = process.argv.includes("--debug") || process.env.LOG_LEVEL === "debug";
+const globalLogLevel: LogLevel = isDebugMode ? LogLevel.Debug : LogLevel.Info;
 
 class ScopedLogger {
     constructor(private normalizedScope: string) {}

@@ -5,3 +5,6 @@ pnpm-lock.yaml
 .env.local
 .env.*.local
 /dist
+/build
+*.tsbuildinfo
+.tsc-out

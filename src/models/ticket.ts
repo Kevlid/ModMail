@@ -1,4 +1,5 @@
 import { HydratedDocument, InferSchemaType, Model, Schema, model } from "mongoose";
+import { client } from "../client";
 
 export enum TicketStatus {
     OPEN = "open",
@@ -51,6 +52,10 @@ const ticketMessageSchema = new Schema(
 
 const ticketSchema = new Schema(
     {
+        _id: {
+            type: String,
+            default: () => client.randomId(Date.now())
+        },
         userId: {
             type: String,
             required: true,

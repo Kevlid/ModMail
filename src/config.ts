@@ -20,8 +20,9 @@ const parseRoleIds = (value: string): string[] => {
 
 export interface BotConfig {
     discordToken: string;
-    mongoUri: string;
     openAiApiKey: string;
+    mongoUri: string;
+    prefix: string;
     guildId: string;
     logChannelId: string;
     categoryIds: Record<Team, string>;
@@ -34,8 +35,9 @@ export interface BotConfig {
 
 export const config: BotConfig = {
     discordToken: getEnv("DISCORD_TOKEN"),
-    mongoUri: getEnv("MONGO_URI"),
     openAiApiKey: getEnv("OPENAI_API_KEY"),
+    mongoUri: getEnv("MONGO_URI"),
+    prefix: getEnv("PREFIX"),
     guildId: getEnv("GUILD_ID"),
     logChannelId: getEnv("LOG_CHANNEL_ID"),
     categoryIds: {

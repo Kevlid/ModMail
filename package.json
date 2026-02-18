@@ -1,0 +1,27 @@
+{
+    "name": "modmail",
+    "version": "1.0.0",
+    "private": true,
+    "packageManager": "pnpm@10.6.1",
+    "main": "dist/index.js",
+    "scripts": {
+        "build": "tsc -p tsconfig.json",
+        "start": "node dist/index.js",
+        "dev": "tsx watch src/index.ts"
+    },
+    "engines": {
+        "node": ">=20.0.0"
+    },
+    "dependencies": {
+        "chalk": "^4.1.2",
+        "dotenv": "^16.4.5",
+        "eris": "^0.18.0",
+        "mongoose": "^8.8.3",
+        "openai": "^4.76.0"
+    },
+    "devDependencies": {
+        "@types/node": "^22.10.1",
+        "tsx": "^4.19.2",
+        "typescript": "^5.7.2"
+    }
+}

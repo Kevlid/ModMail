@@ -1,0 +1,7 @@
+node_modules
+.pnpm-debug.log*
+pnpm-lock.yaml
+.env
+.env.local
+.env.*.local
+/dist

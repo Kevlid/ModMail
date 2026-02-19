@@ -16,8 +16,11 @@
         "chalk": "^4.1.2",
         "dotenv": "^16.4.5",
         "eris": "^0.18.0",
+        "minimist": "^1.2.8",
         "mongoose": "^8.8.3",
-        "openai": "^4.76.0"
+        "openai": "^4.76.0",
+        "yargs-parser": "^22.0.0",
+        "zod": "^4.3.6"
     },
     "devDependencies": {
         "@types/node": "^22.10.1",

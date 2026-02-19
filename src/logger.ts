@@ -59,14 +59,9 @@ class ScopedLogger {
     }    
 }
 
-type LoggerCollection = {
-    ticketService: ScopedLogger;
-    [scope: string]: ScopedLogger;
-};
-
 const scopedLoggers = new Map<string, ScopedLogger>();
 
-const loggers = new Proxy({} as LoggerCollection, {
+const loggers = new Proxy({} as Record<string, ScopedLogger>, {
     get: (_, prop: string | symbol) => {
         if (typeof prop !== 'string') return undefined;
         

@@ -4,8 +4,6 @@ import { client } from "./client";
 
 // Services
 import mongoose from "mongoose";
-import { aiService } from "./services/ai";
-import { ticketService } from "./services/ticket";
 
 const bootstrap = async (): Promise<void> => {
     // Initialize services
@@ -13,8 +11,6 @@ const bootstrap = async (): Promise<void> => {
         serverSelectionTimeoutMS: 10_000,
         maxPoolSize: 20
     });
-    aiService.initialize(config.openAiApiKey);
-    ticketService.initialize(client);
 
     client.once("ready", async () => {
         loggers.client.info(`Modmail bot online as ${client.user.username} (${client.user.id})`);

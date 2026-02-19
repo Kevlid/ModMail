@@ -1,26 +1,21 @@
 import { Command } from "../handlers/command";
+import { ArgumentType } from "../args";
 import { config } from "../config";
 import { ticketService } from "../services/ticket";
 
 export const command: Command = {
     name: "open",
-    args: [
-        {
-            name: "userId",
-            type: "string",
-            required: true,
-        },
-        {
-            name: "category",
-            type: "string",
+    args: {
+        user: {
+            type: ArgumentType.User,
             required: false,
         }
-    ],
+    },
     async execute({ client, message, args }) {
         try {
-            let ticket = await ticketService.open(args.userId as string, config.categoryIds.moderator, message.author.id);
+            let ticket = await ticketService.open(args.user.id as string, config.categoryIds.moderator, message.author.id);
             await client.createMessage(message.channel.id, {
-                content: `Opened ticket for <@${args.userId}> in <#${ticket.channelId}>`,
+                content: `Opened ticket for <@${args.user.id}> in <#${ticket.channelId}>`,
                 messageReference: { messageID: message.id}
             });
         } catch (error) {
@@ -29,13 +24,9 @@ export const command: Command = {
                     content: `User <@${args.userId}> already has an open ticket at <#${error.channelId}>`,
                     messageReference: { messageID: message.id }
                 });
-                return;
+            } else {
+                throw error;
             }
-
-            await client.createMessage(message.channel.id, {
-                content: "Failed to open ticket, Please try again.",
-                messageReference: { messageID: message.id }
-            });
         }
     }
 };

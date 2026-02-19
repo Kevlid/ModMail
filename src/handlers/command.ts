@@ -5,21 +5,21 @@ import path from "node:path";
 import { Client, Message } from "eris";
 import { loggers } from "../logger";
 import { config } from "../config";
-import { ArgItem, argsService, ArgValue } from "../services/args";
+import { ArgumentSchema, parse } from "../args";
 
 export interface CommandContext {
 	client: Client;
 	message: Message;
 	commandName: string;
 	rawArgs?: string[];
-	args?: Record<string, ArgValue>;
-    flags?: Record<string, ArgValue>;
+	args?: Record<string, any>;
+    flags?: Record<string, any>;
 }
 
 export interface Command {
 	name: string;
 	aliases?: string[];
-	args?: ArgItem[];
+	args?: ArgumentSchema;
 	execute: (context: CommandContext) => Promise<void>;
 }
 
@@ -78,12 +78,18 @@ export class CommandHandler {
         const command = await this.getCommand(commandName);
         if (!command) return;
 
-        let {args, flags, errors } = argsService.parse(rawArgs, command.args || []);
-        if (errors && errors.length > 0) {
-            await this.client.createMessage(message.channel.id, `${errors.join(", ")}`);
+        let args: Record<string, any> = {};
+        let flags: Record<string, any> = {};
+        try {
+            const parsed = await parse(rawArgs.join(" "), command.args || {});
+            args = parsed.args;
+            flags = parsed.flags;
+        } catch (error) {
+            loggers.commandHandler.error(`Failed to parse arguments for command: ${commandName}`, error);
+            await this.client.createMessage(message.channel.id, "Invalid command usage. Please check your arguments and try again.");
             return;
         }
-
+        
         const context: CommandContext = {
             client: this.client,
             message,

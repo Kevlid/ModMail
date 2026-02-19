@@ -1,24 +1,11 @@
 import { CategoryChannel } from "eris";
-import { Client } from "../client";
+import { client } from "../client";
 import { loggers } from "../logger";
 import { config } from "../config";
 import { TicketDocument, TicketModel } from "../models/ticket";
 import { CustomError } from "../error";
 
 class Service {
-	public initialized = false;
-    private client: Client = null;
-
-    initialize(client: Client): void {
-        this.client = client;
-        this.initialized = true;
-    }
-
-    isInitialized(): void {
-        if (!this.initialized || !this.client) {
-            throw new Error("Ticket service is not initialized");
-        }
-    }
 
     private async getTicketData(options: {
         ticketId?: string;
@@ -48,8 +35,6 @@ class Service {
         userId?: string;
         status?: "open" | "closed";
     }): Promise<TicketDocument> {
-        this.isInitialized();
-
         const tickets = await this.getTicketData(options);
         if (tickets.length === 0) {
             return null;
@@ -63,14 +48,10 @@ class Service {
         userId?: string;
         status?: "open" | "closed";
     }): Promise<TicketDocument[]> {
-        this.isInitialized();
-
         return await this.getTicketData(options);
     }
 
     async open(userId: string, categoryId: string, moderatorId?: string): Promise<TicketDocument> {
-        this.isInitialized();
-
         let currentTicket = await this.getOne({ userId, status: "open" });
         if (currentTicket) {
             throw new CustomError({
@@ -80,14 +61,14 @@ class Service {
             });
         }
 
-        let guild = this.client.guilds.get(config.guildId);
+        let guild = client.guilds.get(config.guildId);
         if (!guild) {
-            guild = await this.client.getRESTGuild(config.guildId);
+            guild = await client.getRESTGuild(config.guildId);
         }
         
         let category = guild.channels.get(categoryId);
         if (!category) {
-            category = await this.client.getRESTChannel(categoryId) as CategoryChannel;
+            category = await client.getRESTChannel(categoryId) as CategoryChannel;
         }
 
         if (!category || category.type !== 4) {
@@ -100,11 +81,11 @@ class Service {
         }
         let userDisplayName = member ? (member.nick || member.user.globalName || member.user.username) : "Unknown User";
 
-        let ticketChannel = await this.client.createChannel(config.guildId, `${member.username}`, 0, { 
+        let ticketChannel = await client.createChannel(config.guildId, `${member.username}`, 0, { 
             parentID: categoryId,
         })
-        let ticketId = this.client.randomId(Number(ticketChannel.id));
-        await this.client.createMessage(ticketChannel.id, {
+        let ticketId = client.randomId(Number(ticketChannel.id));
+        await client.createMessage(ticketChannel.id, {
             embeds: [
                 {
                     title: "New Ticket Created (#`" + ticketId + "`)",
@@ -137,7 +118,7 @@ class Service {
                 moderator = await guild.fetchMembers({ userIDs: [moderatorId] }).then(members => members[0]);
             }
 
-            this.client.createMessage(ticketChannel.id, {
+            client.createMessage(ticketChannel.id, {
                 embeds: [
                     {
                         author: {
@@ -165,8 +146,9 @@ class Service {
         loggers.ticketService.info(`Replying to channel ${ticketId} as ${sender}: ${message}`);
     }
 
-    async close(ticketId: string, moderatorId: string): Promise<void> {
-        this.isInitialized();
+    async close(ticketId: string, moderatorId: string, options?: { reason?: string }): Promise<void> {
+        let reason = "If you have any further questions, feel free to open a new ticket.";
+        if (options.reason) reason = options.reason;
 
         let ticket = await this.getOne({ ticketId });
         if (!ticket) {
@@ -176,18 +158,18 @@ class Service {
             });
         }
 
-        await this.client.deleteChannel(ticket.channelId);
+        await client.deleteChannel(ticket.channelId);
         await TicketModel.updateOne({ _id: ticketId }, { status: "closed" }).exec();
 
-        let guild = this.client.guilds.get(config.guildId) || await this.client.getRESTGuild(config.guildId);
-        let user = this.client.users.get(ticket.userId) || await this.client.getRESTUser(ticket.userId);
+        let guild = client.guilds.get(config.guildId) || await client.getRESTGuild(config.guildId);
+        let user = client.users.get(ticket.userId) || await client.getRESTUser(ticket.userId);
         let dmChannel = await user.getDMChannel();
 
-        await this.client.createMessage(dmChannel.id, {
+        await client.createMessage(dmChannel.id, {
             embeds: [
                 {
                     title: "Your ticket has been closed",
-                    description: `If you have any further questions, feel free to open a new ticket.`,
+                    description: reason,
                     color: 0xed4245,
                     footer: {
                         text: `Moderation Team`,
@@ -198,12 +180,13 @@ class Service {
         });
 
         // Logging channel
-        let logChannel = guild.channels.get(config.logChannelId) || await this.client.getRESTChannel(config.logChannelId);
-        await this.client.createMessage(logChannel.id, {
+        let logChannel = guild.channels.get(config.logChannelId) || await client.getRESTChannel(config.logChannelId);
+        await client.createMessage(logChannel.id, {
             embeds: [
                 {
                     title: "Ticket Closed",
                     description: [
+                        `> **Ticket ID:** #\`${ticketId}\``,
                         `> **User:** <@${ticket.userId}> (\`${ticket.userId}\`)`,
                         `> **Moderator:** <@${moderatorId}> (\`${moderatorId}\`)`
                     ].join("\n"),
